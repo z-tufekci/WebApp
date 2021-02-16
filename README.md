@@ -19,28 +19,23 @@ Backend Framework: Spring RESTFUL API
 [Accessing data with MySQL](https://spring.io/guides/gs/accessing-data-mysql/)
 
 
-		POST METHOD (/v1/user) 
-		No Authentication
-----------------------------------------------
+
+POST METHOD (/v1/user) 
+No Authentication
+
+GET (/v1/user/self)
+Basic Access Authentication:
+
+PUT (/v1/user/self)
+Basic Access Authentication:
+
+
 POST REQUEST:
 {
   "first_name": "Merhaba",
   "last_name": "Dunya",
   "password": "mouse",
   "username": "m.dunya@email.com"
-}
-
-BAD REQUEST:(If username is already exists) or (one of the features is non exists)
-{
-  "first_name": "John",
-  "last_name": "Doe",
-  "password": "ali",
-   "username": "j.doe@gmail.com"
-}
-	OR
-{
-  "first_name": "John",
-  "last_name": "Doe"
 }
 
 (201 HttpStatus.Created ) : SUCCESS
@@ -55,21 +50,7 @@ POST RESPONSE:
     "lastname": "Galaxy"
 }
 
-(400 HttpStatus.Bad Request ) : BADREQ
---------------------------------------------------
-{
-    "timestamp": "2021-02-16T02:33:15.327+00:00",
-    "status": 400,
-    "error": "Bad Request",
-    "message": "",
-    "path": "/v1/user/"
-}
 
-
-		GET (/v1/user/self)
-
-		Basic Access Authentication:
---------------------------------------------------
 GET RESPONSE: (200 HttpStatus.OK )
 {
     "id": "5721bc36-2567-4011-bf0b-a0533155b62e",
@@ -80,19 +61,6 @@ GET RESPONSE: (200 HttpStatus.OK )
     "lastname": "Doe"
 }
 
-GET RESPONSE: (401 HttpStatus.Unauthorized )
-{
-    "timestamp": "2021-02-16T01:42:20.047+00:00",
-    "status": 401,
-    "error": "Unauthorized",
-    "message": "",
-    "path": "/v1/user/self"
-}
-
-		PUT (/v1/user/self)
-			
-		Basic Access Authentication:
---------------------------------------------------
 
 PUT REQUEST:
 {
@@ -100,37 +68,4 @@ PUT REQUEST:
   "last_name": "Doe",
   "password": "ali"
 }
-
-BAD REQUEST:
-{
-  "first_name": "John",
-  "last_name": "Doe",
-  "password": "ali"
-   "username": "j.doe@gmail.com"
-}
-	OR
-{
-    "id": "5721bc36-2567-4011-bf0b-a0533155b62e",
-    "password": "ali"
-    "firstname": "Jane",
-    "lastname": "Doe"
-}
-	OR (IGNORED)
-{
-    "account_created": "2021-02-15T02:38:25.000+00:00",
-    "account_updated": "2021-02-15T02:38:25.000+00:00",
-    "password": "ali"
-    "firstname": "Jane",
-    "lastname": "Doe"
-}
-
-PUT RESPONSE:
-
-(204 HttpStatus.No Content ) : SUCCESS
-
-(401 HttpStatus.Unauthorized ) : UNAUTH
-
-(400 HttpStatus.BadRequest ) : BADREQ
-
-
 
