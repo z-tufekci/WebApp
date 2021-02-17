@@ -12,21 +12,85 @@ Relational Database: MySQL 14.14
 
 Backend Framework: Spring RESTFUL API, JPA, Spring Boot 2.4.2
 
+
 [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
+
 [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
+
 [Building REST services with Spring](https://spring.io/guides/tutorials/bookmarks/)
+
 [Accessing data with MySQL](https://spring.io/guides/gs/accessing-data-mysql/)
 
 
 
+
 POST METHOD (/v1/user) 
-No Authentication
+Public Access
 
 GET (/v1/user/self)
-Basic Access Authentication:
+Basic Access Authentication
 
 PUT (/v1/user/self)
-Basic Access Authentication:
+Basic Access Authentication
+
+POST (/books)
+Basic Access Authentication
+
+DELETE (​/books​/{id})
+Basic Access Authentication
+
+GET (/books)
+Public Access
+
+GET (/books​/{id})
+Public Access
+
+
+
+User{
+	UUID id	   example: d290f1ee-6c54-4b01-90e6-d701748f0851 (readOnly)
+
+	String first_name
+	
+	String last_name
+	
+	String password	 (writeOnly) [BCyrpted]
+	
+	String username	(email) example: jane.doe@example.com
+	
+	account_created	string($date-time) 	example: 2016-08-29T09:12:33.001Z
+	(readOnly)
+
+	account_updated	string($date-time)  example: 2016-08-29T09:12:33.001Z
+	(readOnly)
+} 
+
+Book{
+	id*	string($uuid)
+	example: d6193106-a192-46db-aae9-f151004ee453
+	readOnly: true
+	
+	title*	string
+	example: Computer Networks
+	
+	author*	string
+	example: Andrew S. Tanenbaum
+	
+	isbn*	string
+	example: 978-0132126953
+	
+	published_date*	string
+	example: May, 2020
+	
+	book_created	string($date-time)
+	example: 2016-08-29T09:12:33.001Z
+	readOnly: true
+	
+	user_id	string($uuid)
+	example: d290f1ee-6c54-4b01-90e6-d701748f0851
+	readOnly: true
+ 
+}
 
 
 POST REQUEST:
@@ -35,6 +99,7 @@ POST REQUEST:
   "last_name": "Dunya",
   "password": "mouse",
   "username": "m.dunya@email.com"
+
 }
 
 
@@ -46,6 +111,7 @@ POST RESPONSE: (201 HttpStatus.Created )
     "account_updated": "2021-02-16T02:32:09.092+00:00",
     "firstname": "Merhaba",
     "lastname": "Galaxy"
+
 }
 
 
@@ -57,6 +123,7 @@ GET RESPONSE: (200 HttpStatus.OK )
     "account_updated": "2021-02-15T02:38:25.000+00:00",
     "firstname": "Jane",
     "lastname": "Doe"
+
 }
 
 
@@ -65,5 +132,6 @@ PUT REQUEST:
   "first_name": "John",
   "last_name": "Doe",
   "password": "ali"
+
 }
 
