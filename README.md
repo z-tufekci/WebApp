@@ -10,8 +10,7 @@ Project: Apache Maven4.0
 
 Relational Database: MySQL 14.14
 
-Backend Framework: Spring RESTFUL API
-		   Spring Boot 2.4.2
+Backend Framework: Spring RESTFUL API, JPA, Spring Boot 2.4.2
 
 [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
 [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
@@ -38,9 +37,8 @@ POST REQUEST:
   "username": "m.dunya@email.com"
 }
 
-(201 HttpStatus.Created ) : SUCCESS
---------------------------------------------------
-POST RESPONSE:
+
+POST RESPONSE: (201 HttpStatus.Created )
 {
     "id": "20451d4c-7486-48e7-9748-b261af23591b",
     "username": "merhaba.galaxy@email.com",

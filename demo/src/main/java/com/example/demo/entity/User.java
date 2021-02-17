@@ -4,7 +4,8 @@ import java.util.Date;
 import java.util.UUID;
 
 import javax.persistence.Entity;
-
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -15,7 +16,8 @@ import com.fasterxml.jackson.annotation.JsonView;
 public class User {
 	
 
-	@Id    //@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Id    
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	@org.hibernate.annotations.Type(type="uuid-char")
 	private UUID id;/* read only */
 	private String first_name;
