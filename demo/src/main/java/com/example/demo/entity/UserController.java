@@ -133,15 +133,29 @@ public class UserController  {
 
   	  	List<User> list = userRepository.findByUsername(username); /*retrieve user from database*/
   	  	User realUser = list.get(0);
-
+  	    String encoded ="";
 		 if(userup.getFirst_name() != null)
 			 realUser.setFirstName(userup.getFirst_name());
 		 if(userup.getLast_name() != null)
 			 realUser.setLastName(userup.getLast_name());
 		 if(userup.getPassword() != null) {
-			 String encoded = passwordEncoder.encode(userup.getPassword());
+			 
+			 String password = userup.getPassword();
+			 //Check password
+			 //at least one lowercase, uppercase, number, and symbol exist in a 8+ character length password: "aA9.12345"
+			 String regex = "^(?=\\P{Ll}*\\p{Ll})(?=\\P{Lu}*\\p{Lu})(?=\\P{N}*\\p{N})(?=[\\p{L}\\p{N}]*[^\\p{L}\\p{N}])[\\s\\S]{8,}$";
+			 Pattern pattern = Pattern.compile(regex);
+			 Matcher matcher = pattern.matcher(password);
+			 if(!matcher.matches())
+					throw new BedRequestException(); /*If it is not strong password, throw bad request error*/				
+			 encoded = passwordEncoder.encode(password);
+			 //System.out.println("Password:"+password+" Encoded:"+encoded);
 			 realUser.setPassword(encoded);
+
 		 }
+		 User_db user_db = new User_db(username,encoded,true); 
+		 userdbRepository.save(user_db);/*password updated in authorities table */
+		 		 
 		 realUser.setAccount_updated(new Date());  /* Updating date-time*/
 		 SecurityContextHolder.getContext().setAuthentication(null);
          return userRepository.save(realUser);
