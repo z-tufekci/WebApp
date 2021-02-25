@@ -53,6 +53,17 @@ public class BookControler {
 		List<Book> books = bookRepository.findById(id);
 		if(books.isEmpty())
 			throw new NotFoundException() ;
+		
+		Book currentBook = books.get(0);
+		UUID userId= currentBook.getUser_id();
+		
+		List<User> userl = userRepository.findById(userId);
+		System.out.println(userl.get(0));
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();		
+		if(!userl.get(0).getUsername().equalsIgnoreCase(username))
+			throw new NotFoundException() ;
+
+		
 		SecurityContextHolder.getContext().setAuthentication(null);			
 		bookRepository.delete(books.get(0));
 	}
