@@ -1,6 +1,7 @@
 package com.example.demo.entity;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -19,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import com.example.demo.exception.BedRequestException;
 import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.BookRepository;
+import com.example.demo.repository.FileRepository;
 import com.example.demo.repository.UserRepository;
 
 @RestController
@@ -30,6 +32,9 @@ public class BookControler {
 	@Autowired
     UserRepository userRepository;
 	
+	@Autowired
+    FileRepository fileRepository;
+	
 	
 	@RequestMapping(path = "/books" ,method = RequestMethod.GET, produces = "application/json")
 	@ResponseStatus(HttpStatus.OK)
@@ -39,12 +44,28 @@ public class BookControler {
 	
 	@RequestMapping(path = "/books/{id}" ,method = RequestMethod.GET, produces = "application/json")
 	@ResponseStatus(HttpStatus.OK) 
-	public Book getBook(@PathVariable UUID id) {
+	public BookWithImages getBook(@PathVariable UUID id) {
 		List<Book> books = bookRepository.findById(id);
 		if(books.isEmpty())
 			throw new NotFoundException();
-					
-	    return books.get(0);
+		
+		List<File> bookImages = new ArrayList<File>();
+		List<File> images= fileRepository.findByUserId(books.get(0).getUser_id());
+		System.out.println(images.size());
+		System.out.println(images);
+		if(!images.isEmpty()) {
+			for(File image : images) {
+				String s3name = image.getS3_object_name();
+				String bookID= s3name.substring(0,s3name.indexOf('/'));
+				UUID uuid = UUID.fromString(bookID);
+				System.out.println(uuid);
+				System.out.println(uuid.equals(id));
+				if(uuid.equals(id))
+					bookImages.add(image);
+			}
+		}
+		System.out.println(bookImages.toString());
+		return new BookWithImages(books.get(0), bookImages);
 	}
 
 	@RequestMapping(path = "/books/{id}" ,method = RequestMethod.DELETE)

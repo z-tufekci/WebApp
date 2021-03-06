@@ -12,7 +12,7 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonView;
 
 @Entity
-@Table(name = "usersdata") 
+@Table(name = "usersdata", catalog = "user_db") 
 public class User {
 	
 
