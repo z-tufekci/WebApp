@@ -33,7 +33,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 // .authorizeRequests().anyRequest().authenticated()
                 .authorizeRequests().antMatchers("/v1/user/self","/v1/user/self/**").hasRole("USER")
                 .antMatchers(HttpMethod.POST, "/books/*","/books").hasRole("USER")
-                .antMatchers(HttpMethod.DELETE, "/books/*","/books").hasRole("USER")
+                .antMatchers(HttpMethod.DELETE, "/books/*","/books","/books/*/image/*").hasRole("USER")
                 .and()
                 .httpBasic();
     }
