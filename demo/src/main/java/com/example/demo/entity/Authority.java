@@ -6,7 +6,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "authorities") 
+@Table(name = "authorities", catalog = "user_db") 
 public class Authority {
 	@Id
 	@Column(name="username")
