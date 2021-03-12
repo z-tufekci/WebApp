@@ -3,7 +3,9 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-
+.mvn/wrapper
+/**/mvnw
+/**/mvnw.cmd
 ### STS ###
 .apt_generated
 .classpath
@@ -60,11 +62,11 @@ pom.xml.next
 release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
-.mvn/timing.properties
-.mvn/wrapper/maven-wrapper.jar
-.mvn/wrapper/maven-wrapper.properties
-.mvn/wrapper/MavenDownloader.java
-.mvn/wrapper/MavenWrapperDownloader.java
+/**/.mvn/timing.properties
+/**/.mvn/wrapper/maven-wrapper.jar
+/**/.mvn/wrapper/maven-wrapper.properties
+/**/.mvn/wrapper/MavenDownloader.java
+/**/.mvn/wrapper/MavenWrapperDownloader.java
 
 .metadata
 bin/
