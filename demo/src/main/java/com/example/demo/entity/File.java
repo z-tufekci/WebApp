@@ -5,8 +5,6 @@ import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
@@ -15,10 +13,10 @@ import javax.validation.constraints.NotNull;
 @Table(name = "files", catalog = "user_db" )
 public class File {
 
-	@Id    
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	@org.hibernate.annotations.Type(type="uuid-char")
+	@Id    //@GeneratedValue(strategy = GenerationType.AUTO)
+	@org.hibernate.annotations.Type(type="uuid-char")																	//@Column(name="id", columnDefinition = "uniqueidentifier")
 	UUID id;
+	
 	@NotNull
 	String filename;
 	@NotNull
@@ -51,6 +49,8 @@ public class File {
 		return "File [id=" + id + ", filename=" + filename + ", s3_object_name=" + s3_object_name
 				+ ", created_date=" + created_date + ", userId=" + userId + "]";
 	}
+	
+	
 	public UUID getId() {
 		return id;
 	}
