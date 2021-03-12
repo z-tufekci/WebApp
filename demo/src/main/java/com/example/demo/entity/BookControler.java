@@ -22,6 +22,13 @@ import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.BookRepository;
 import com.example.demo.repository.FileRepository;
 import com.example.demo.repository.UserRepository;
+import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.Delete;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
+import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 @RestController
 public class BookControler {
@@ -38,8 +45,14 @@ public class BookControler {
 	
 	@RequestMapping(path = "/books" ,method = RequestMethod.GET, produces = "application/json")
 	@ResponseStatus(HttpStatus.OK)
-    public List<Book> index(){
-        return bookRepository.findAll();
+    public List<BookWithImages> index(){
+		List<BookWithImages> bwis = new ArrayList<BookWithImages>();
+		List<Book> allbooks = bookRepository.findAll();
+		for(Book b: allbooks) {
+			BookWithImages bwi = getABook(b);
+			bwis.add(bwi);
+		}		
+        return bwis; 
     }
 	
 	@RequestMapping(path = "/books/{id}" ,method = RequestMethod.GET, produces = "application/json")
@@ -49,23 +62,7 @@ public class BookControler {
 		if(books.isEmpty())
 			throw new NotFoundException();
 		
-		List<File> bookImages = new ArrayList<File>();
-		List<File> images= fileRepository.findByUserId(books.get(0).getUser_id());
-		System.out.println(images.size());
-		System.out.println(images);
-		if(!images.isEmpty()) {
-			for(File image : images) {
-				String s3name = image.getS3_object_name();
-				String bookID= s3name.substring(0,s3name.indexOf('/'));
-				UUID uuid = UUID.fromString(bookID);
-				System.out.println(uuid);
-				System.out.println(uuid.equals(id));
-				if(uuid.equals(id))
-					bookImages.add(image);
-			}
-		}
-		System.out.println(bookImages.toString());
-		return new BookWithImages(books.get(0), bookImages);
+		return getABook(books.get(0));
 	}
 
 	@RequestMapping(path = "/books/{id}" ,method = RequestMethod.DELETE)
@@ -84,9 +81,47 @@ public class BookControler {
 		if(!userl.get(0).getUsername().equalsIgnoreCase(username))
 			throw new NotFoundException() ;
 
+		/*Connect to s3 bucket*/
+		Region region = Region.US_EAST_1; //region(region).
 		
-		SecurityContextHolder.getContext().setAuthentication(null);			
+		S3Client s3 = S3Client.builder()
+	              .credentialsProvider(InstanceProfileCredentialsProvider.builder().build()).region(region)
+	              .build();
+	    
+		String bucketName = System.getProperty("s3_BUCKET");
+
+		
+		List<File> images= fileRepository.findByUserId(userId);
+		if(!images.isEmpty()) {
+			for(File image : images) {
+				String s3name = image.getS3_object_name();
+				String bookID= s3name.substring(11,s3name.indexOf('/'));
+				UUID uuid = UUID.fromString(bookID);
+				if(uuid.equals(currentBook.getId())) {
+
+					//delete image from s3 and database
+					fileRepository.delete(image);
+					
+					String objectName = ""+uuid+"/"+image.getId()+""+image.getFilename();
+					ArrayList<ObjectIdentifier> toDelete = new ArrayList<ObjectIdentifier>();
+			        toDelete.add(ObjectIdentifier.builder().key(objectName).build());
+
+			        try {
+			            DeleteObjectsRequest dor = DeleteObjectsRequest.builder()
+			                    .bucket(bucketName)
+			                    .delete(Delete.builder().objects(toDelete).build())
+			                    .build();
+			            s3.deleteObjects(dor);
+			        } catch (S3Exception e) {
+			            System.err.println(e.awsErrorDetails().errorMessage());
+			            System.exit(1);
+			        }
+			 
+				}
+			}
+		}
 		bookRepository.delete(books.get(0));
+		SecurityContextHolder.getContext().setAuthentication(null);		
 	}
 	
 	@RequestMapping(path = "/books" ,method = RequestMethod.POST, produces = "application/json",consumes = "application/json")
@@ -128,5 +163,18 @@ public class BookControler {
 		SecurityContextHolder.getContext().setAuthentication(null);
         return bookRepository.save(newBook);
     }
-	
+	private BookWithImages getABook(Book book) {
+		List<File> bookImages = new ArrayList<File>();
+		List<File> images= fileRepository.findByUserId(book.getUser_id());
+		if(!images.isEmpty()) {
+			for(File image : images) {
+				String s3name = image.getS3_object_name();
+				String bookID= s3name.substring(11,s3name.indexOf('/'));
+				UUID uuid = UUID.fromString(bookID);
+				if(uuid.equals(book.getId()))
+					bookImages.add(image);
+			}
+		}
+		return new BookWithImages(book, bookImages);
+	}
 }
