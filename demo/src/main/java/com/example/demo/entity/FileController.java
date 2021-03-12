@@ -1,7 +1,6 @@
 package com.example.demo.entity;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,9 +38,7 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.model.Delete;
 import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 
 @RestController
@@ -87,25 +84,21 @@ public class FileController {
 		}
 
 		Region region = Region.US_EAST_1; //region(region).
-		
-		
-		
-		
+
 		S3Client s3 = S3Client.builder()
 	              .credentialsProvider(InstanceProfileCredentialsProvider.builder().build()).region(region)
 	              .build();
 		
-		System.out.println(s3);
-		
-        String bucketName =  System.getProperty("s3_BUCKET");  //"webapp.firstname.lastname";
+        String bucketName = System.getProperty("s3_BUCKET");  
         System.out.println("Uploading object...");
         System.out.println(bucketName);
         File newFile = new File();
 		UUID uuid = java.util.UUID.randomUUID();
-		
+		System.out.println(uuid);
 		//ObjectKey:bookid/imageid/filename
         String key = ""+book_id+"/"+uuid+""+file.getOriginalFilename();
-
+        System.out.println(uuid);
+        System.out.println(key);
         Map<String,String> metadata = new HashMap<>();          
         String value = "x-amz-meta-"+book_id+"/"+uuid+"/"+file.getOriginalFilename();
         metadata.put("My metadata", value);
@@ -126,42 +119,40 @@ public class FileController {
         return fileRepository.save(newFile); 
     }
 	
-	@RequestMapping(path = "/books​/{book_id}​/image​/{image_id}" ,method = RequestMethod.DELETE)
+	@RequestMapping(path = "/books/{book_id}/image/{image_id}" ,method = RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT) 
-	public void delete(@PathVariable UUID book_id,UUID image_id) {
+	public void delete(@PathVariable UUID book_id,@PathVariable UUID image_id) {
+		
+		System.out.println("Image ID: " + image_id);
+		System.out.println("Hello I am here!!");
+		
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();		
 		List<User> userl = userRepository.findByUsername(username);//Authanticated user
-		
-		//System.out.println("Image" +userl.get(0));
-		
-		if(!userl.get(0).getUsername().equalsIgnoreCase(username))
-			throw new NotFoundException() ;
-		
+
 		List<Book> books = bookRepository.findById(book_id);
+		System.out.println(books.isEmpty());
 		if(books.isEmpty())
 			throw new NotFoundException() ;
 		
 		Book currentBook = books.get(0);
 		UUID userId= currentBook.getUser_id();//The owner of the book
+		
+		System.out.println(userId+"   "+userl.get(0).getId());
 		if(!userId.equals(userl.get(0).getId()))
 			throw new NotFoundException() ;
 		
 		List<File> files = fileRepository.findById(image_id);
+		System.out.println("File is empty "+files.isEmpty());
 		if(files.isEmpty())
-			throw new NotFoundException() ;
-		
-		if(!files.get(0).getUserId().equals(userId))
 			throw new NotFoundException() ;
 		
 		Region region = Region.US_EAST_1; //region(region).
 		
-
-		
 		S3Client s3 = S3Client.builder()
 	              .credentialsProvider(InstanceProfileCredentialsProvider.builder().build()).region(region)
 	              .build();
-	    
-		String bucketName = System.getProperty("s3_BUCKET");  //"webapp.firstname.lastname";
+
+		String bucketName = System.getProperty("s3_BUCKET"); 
 		
 		String objectName = ""+book_id+"/"+files.get(0).getId()+""+files.get(0).getFilename();
 		ArrayList<ObjectIdentifier> toDelete = new ArrayList<ObjectIdentifier>();
