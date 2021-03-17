@@ -28,7 +28,17 @@ jobs:
         echo "${{ env.ARTIFACT_NAME }}"
         pwd
         ls -al
-        mvn -X -B package --file pom.xml
+        # mvn -X -B package --file pom.xml
+    - name: BÄuild Deployment Artifact
+      run: |
+        mkdir codedeploy_artifact
+        zip -r {{ env.ARTIFACT_NAME }} script/*.sh appspec.yml
+        mv {{ env.ARTIFACT_NAME }} codedeploy_artifact/
+        ls -al
+        pwd
+        cd codedeploy_artifact
+        pwd
+        ls- al
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
