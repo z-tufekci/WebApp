@@ -88,42 +88,43 @@ Book{
 
 POST REQUEST{
 
-  "first_name": "Merhaba",
-  "last_name": "Dunya",
-  "password": "mouse",
-  "username": "m.dunya@email.com"
+	"first_name": "Merhaba",
+	"last_name": "Dunya",
+	"password": "mouse",
+  	"username": "m.dunya@email.com"
 
 }
 
 (201 HttpStatus.Created )
 POST RESPONSE{
 
-    "id": "20451d4c-7486-48e7-9748-b261af23591b",
-    "username": "merhaba.galaxy@email.com",
-    "account_created": "2021-02-16T02:32:09.092+00:00",
-    "account_updated": "2021-02-16T02:32:09.092+00:00",
-    "firstname": "Merhaba",
-    "lastname": "Galaxy"
+    	"id": "20451d4c-7486-48e7-9748-b261af23591b",
+    	"username": "merhaba.galaxy@email.com",
+    	"account_created": "2021-02-16T02:32:09.092+00:00",
+    	"account_updated": "2021-02-16T02:32:09.092+00:00",
+    	"firstname": "Merhaba",
+    	"lastname": "Galaxy"
 
 }
 
 (200 HttpStatus.OK )
 GET RESPONSE{
 
-    "id": "5721bc36-2567-4011-bf0b-a0533155b62e",
-    "username": "john.doe@example.com",
-    "account_created": "2021-02-15T02:38:25.000+00:00",
-    "account_updated": "2021-02-15T02:38:25.000+00:00",
-    "firstname": "Jane",
-    "lastname": "Doe"
+    	"id": "5721bc36-2567-4011-bf0b-a0533155b62e",
+    	"username": "john.doe@example.com",
+    	"account_created": "2021-02-15T02:38:25.000+00:00",
+    	"account_updated": "2021-02-15T02:38:25.000+00:00",
+    	"firstname": "Jane",
+    	"lastname": "Doe"
 
 }
 
+URL (/v1/user/self)
 PUT REQUEST{
 
-  "first_name": "John",
-  "last_name": "Doe",
-  "password": "ali"
+	"first_name": "John",
+	"last_name": "Doe",
+	"password": "ali"
 
 }
 

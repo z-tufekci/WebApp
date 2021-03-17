@@ -1,0 +1,25 @@
+version: 0.0
+
+os: linux
+
+files:
+  - source: /
+    destination: /opt/tomcat/webapps
+
+hooks:
+  ApplicationStop:
+    - location: script/stopTomcat.sh 
+      timeout: 180
+  BeforeInstall:
+   - location: script/t.sh
+     timeout: 180
+  AfterInstall:
+   - location: script/x.sh
+     timeout: 180
+  ApplicationStart:
+    - location: scripts/y.sh
+      timeout: 3600
+  ValidateService:
+    - location: scripts/z.sh
+      timeout: 3600
+ 
