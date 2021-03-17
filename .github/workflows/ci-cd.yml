@@ -1,7 +1,7 @@
 name: Upload Website
 
 env:
-   # ARTIFACT_NAME: csye6225-webapp-12
+  ARTIFACT_NAME: csye6225-webapp-${{ github.sha }}.zip
   CODEDEPLOY_APP_NAME: csye6225-webapp
   CODEDEPLOY_APP_DEPLOYGROUPNAME: csye6225-webapp-deployment
 on:
@@ -24,7 +24,11 @@ jobs:
         java-version: 11
 
     - name: Build with Maven
-      run: mvn -X -B package --file pom.xml
+      run: |
+        echo "${{ env.ARTIFACT_NAME }}"
+        pwd
+        ls -al
+        mvn -X -B package --file pom.xml
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
