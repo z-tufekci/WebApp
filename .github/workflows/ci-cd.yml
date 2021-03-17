@@ -1,4 +1,4 @@
-name: Upload Website
+name: CI-CD
 
 env:
   ARTIFACT_NAME: csye6225-webapp-${{ github.sha }}.zip
@@ -54,4 +54,4 @@ jobs:
    #         --s3-location bucket=codedeploy.tufekciz,key=WordPressApp.zip,bundleType=zip
     - name: Copy files to the test website with the AWS CLI
       run: |
-        aws s3 sync . s3://codedeploy.tufekciz
+        aws s3 sync . s3://codedeploy.tufekciz --exclude '.git/*' 
