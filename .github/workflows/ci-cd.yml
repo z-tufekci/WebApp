@@ -28,7 +28,7 @@ jobs:
         echo "${{ env.ARTIFACT_NAME }}"
         pwd
         ls -al
-        mvn -X -B package --file pom.xml -DskipTests
+        mvn -X -B package --file pom.xml -Dmaven.test.skip=true
     - name: Build Deployment Artifact
       run: |
         mkdir codedeploy_artifact
