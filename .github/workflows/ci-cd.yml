@@ -47,13 +47,14 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
-   # - name: Create Deployment
-   #   uses: aws deploy create-deployment \
-   #         --application-name  \ 
-   #         --deployment-config-name your-deployment-config-name \ 
-   #         --deployment-group-name your-deployment-group-name \ 
-   #         --s3-location bucket=codedeploy.tufekciz,key=WordPressApp.zip,bundleType=zip
     - name: Copy files to the test website with the AWS CLI
       run: |
         aws --version
-        aws s3 sync ./codedeploy_artifact s3://codedeploy.tufekciz --exclude '.git/*'
+        aws s3 sync ./codedeploy_artifact s3://codedeploy.tufekciz
+
+    - name: Create Deployment
+      uses: aws deploy create-deployment \
+            --application-name ${{ env.CODEDEPLOY_APP_NAME }} \ 
+            --deployment-config-name CodeDeployDefault.AllAtOnce \ 
+            --deployment-group-name ${{ env.CODEDEPLOY_APP_DEPLOYGROUPNAME }} \ 
+            --s3-location bucket=codedeploy.tufekciz,key=${{ env.ARTIFACT_NAME }},bundleType=zip
