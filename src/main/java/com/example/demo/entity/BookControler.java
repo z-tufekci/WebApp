@@ -43,7 +43,7 @@ public class BookControler {
     FileRepository fileRepository;
 	
 	
-	@RequestMapping(path = "/mybooks" ,method = RequestMethod.GET, produces = "application/json")
+	@RequestMapping(path = "/books" ,method = RequestMethod.GET, produces = "application/json")
 	@ResponseStatus(HttpStatus.OK)
     public List<BookWithImages> index(){
 		List<BookWithImages> bwis = new ArrayList<BookWithImages>();
