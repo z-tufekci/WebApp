@@ -2,8 +2,8 @@ name: CI-CD
 
 env:
   ARTIFACT_NAME: csye6225-webapp-${{ github.sha }}.zip
-  CODEDEPLOY_APP_NAME: "csye6225-webapp"
-  CODEDEPLOY_APP_DEPLOYGROUPNAME: "csye6225-webapp-deployment"
+  CODEDEPLOY_APP_NAME: csye6225-webapp
+  CODEDEPLOY_APP_DEPLOYGROUPNAME: csye6225-webapp-deployment
 on:
   push:
     branches:
@@ -53,6 +53,7 @@ jobs:
         aws s3 sync ./codedeploy_artifact s3://${{ secrets.S3_BUCKET_NAME }}
 
     - name: Create Deployment
+      run: |
       uses: aws deploy create-deployment \
             --application-name ${{ env.CODEDEPLOY_APP_NAME }} \ 
             --deployment-config-name CodeDeployDefault.AllAtOnce \ 
