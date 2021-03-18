@@ -10,6 +10,9 @@ hooks:
   ApplicationStop:
     - location: ./script/stop.sh 
       timeout: 180
+  BeforeInstall:
+   - location: ./script/before.sh
+     timeout: 180
   AfterInstall:
    - location: ./script/after.sh
      timeout: 180
