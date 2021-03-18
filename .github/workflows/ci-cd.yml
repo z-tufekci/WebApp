@@ -5,7 +5,7 @@ env:
   CODEDEPLOY_APP_NAME: csye6225-webapp
   CODEDEPLOY_APP_DEPLOYGROUPNAME: csye6225-webapp-deployment
 on:
-  push:
+  pull_request:
     branches:
     - main
   workflow_dispatch:
@@ -23,7 +23,7 @@ jobs:
       with:
         java-version: 11
 
-    - name: Build with Maven
+    - name: Build package with Maven
       run: |
         echo "${{ env.ARTIFACT_NAME }}"
         pwd
@@ -47,7 +47,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
-    - name: Copy files to the test website with the AWS CLI
+    - name: Copy artifact to S3 bucket
       run: |
         aws --version
         aws s3 sync ./codedeploy_artifact s3://${{ secrets.S3_BUCKET_NAME }}
