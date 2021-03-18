@@ -3,23 +3,17 @@ version: 0.0
 os: linux
 
 files:
-  - source: /
+  - source: ./target/demo-0.0.1-SNAPSHOT.war
     destination: /opt/tomcat/webapps
 
 hooks:
   ApplicationStop:
-    - location: script/stopTomcat.sh 
+    - location: ./script/stop.sh 
       timeout: 180
-  BeforeInstall:
-   - location: script/t.sh
-     timeout: 180
   AfterInstall:
-   - location: script/x.sh
+   - location: ./script/after.sh
      timeout: 180
   ApplicationStart:
-    - location: scripts/y.sh
-      timeout: 3600
-  ValidateService:
-    - location: scripts/z.sh
+    - location: ./scripts/start.sh
       timeout: 3600
  
