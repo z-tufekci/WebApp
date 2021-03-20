@@ -1,0 +1,33 @@
+name: Test project
+
+env:
+  ARTIFACT_NAME: csye6225-webapp-${{ github.sha }}.zip
+  CODEDEPLOY_APP_NAME: csye6225-webapp
+  CODEDEPLOY_APP_DEPLOYGROUPNAME: csye6225-webapp-deployment
+on:
+  pull_request:
+    branches:
+    - main
+
+  workflow_dispatch:
+jobs:
+  deploy:
+
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+
+    - name: Build package with Maven
+      run: |
+        pwd
+        ls -al
+        mvn -X -B package --file pom.xml -Dmaven.test.skip=false 
+
