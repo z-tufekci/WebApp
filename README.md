@@ -15,28 +15,6 @@ Prerequisites for building and deploying application
 
 
 
-POST METHOD (/v1/user) 
-Public Access
-
-GET (/v1/user/self)
-Basic Access Authentication
-
-PUT (/v1/user/self)
-Basic Access Authentication
-
-POST (/books)
-Basic Access Authentication
-
-DELETE (​/books​/{id})
-Basic Access Authentication
-
-GET (/books)
-Public Access
-
-GET (/books​/{id})
-Public Access
-
-
 
 User{
 
@@ -127,4 +105,29 @@ PUT REQUEST{
 	"password": "ali"
 
 }
+
+
+
+POST METHOD (/v1/user) 
+Public Access
+
+GET (/v1/user/self)
+Basic Access Authentication
+
+PUT (/v1/user/self)
+Basic Access Authentication
+
+POST (/books)
+Basic Access Authentication
+
+DELETE (​/books​/{id})
+Basic Access Authentication
+
+GET (/books)
+Public Access
+
+GET (/books​/{id})
+Public Access
+
+
 
