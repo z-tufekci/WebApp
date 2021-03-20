@@ -25,5 +25,5 @@ jobs:
       run: |
         pwd
         ls -al
-        mvn -X -B package --file pom.xml -Dmaven.test.skip=false 
+        mvn -B package --file pom.xml -Dmaven.test.skip=false 
 
