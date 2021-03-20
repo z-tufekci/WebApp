@@ -17,7 +17,6 @@
         <packaging>war</packaging> 
 	<properties>
 		<java.version>11</java.version>
-		<maven.test.skip>true</maven.test.skip>
 	</properties>
 
 	<dependencies>
@@ -73,13 +72,6 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-  				<groupId>org.apache.maven.plugins</groupId>
- 			 	<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					 <skipTests>true</skipTests>
-				</configuration>
 			</plugin>
 		</plugins>
 		
