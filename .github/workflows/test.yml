@@ -1,9 +1,5 @@
-name: Test project
+name: Test Web-app
 
-env:
-  ARTIFACT_NAME: csye6225-webapp-${{ github.sha }}.zip
-  CODEDEPLOY_APP_NAME: csye6225-webapp
-  CODEDEPLOY_APP_DEPLOYGROUPNAME: csye6225-webapp-deployment
 on:
   pull_request:
     branches:
@@ -13,7 +9,7 @@ on:
 jobs:
   deploy:
 
-    name: Deploy
+    name: Unit Tests
     runs-on: ubuntu-latest
 
     steps:
