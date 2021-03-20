@@ -12,6 +12,7 @@ on:
   workflow_dispatch:
 jobs:
   deploy:
+    if: github.event.pull_request.merged == true
     name: Deploy
     runs-on: ubuntu-latest
 
