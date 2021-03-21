@@ -49,7 +49,7 @@ public class BookControllerTest {
 		List<Book> listBook = new ArrayList<Book>();
 		listBook.add(new Book(java.util.UUID.randomUUID(),"123-456-789","ABC","21 March", "author", new Date(), java.util.UUID.randomUUID()));
 		Mockito.when(bookRepository.findAll()).thenReturn(listBook);		
-		String url = "/mybooks";
+		String url = "/books";
 		mockmvc.perform(MockMvcRequestBuilders.get(url)).andExpect(MockMvcResultMatchers.status().isOk());		
 	}
 }
