@@ -5,7 +5,8 @@ os: linux
 files:
   - source: ./target/demo-0.0.1-SNAPSHOT.war
     destination: /opt/tomcat/webapps
-
+  - source: cloudwatch-config.json
+    destination: /opt
 hooks:
   ApplicationStop:
     - location: ./script/stop.sh 
