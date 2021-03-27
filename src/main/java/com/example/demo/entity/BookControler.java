@@ -22,6 +22,8 @@ import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.BookRepository;
 import com.example.demo.repository.FileRepository;
 import com.example.demo.repository.UserRepository;
+import com.timgroup.statsd.StatsDClient;
+
 import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -30,9 +32,14 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 public class BookControler {
-
+	
+	private final static Logger logger =LoggerFactory.getLogger(BookControler.class);
+	 
 	@Autowired
     BookRepository bookRepository;
 	
@@ -69,9 +76,10 @@ public class BookControler {
 	@ResponseStatus(HttpStatus.NO_CONTENT) 
 	public void delete(@PathVariable UUID id) {
 		List<Book> books = bookRepository.findById(id);
-		if(books.isEmpty())
+		if(books.isEmpty()) {
+			logger.error("Book is not found");
 			throw new NotFoundException() ;
-		
+		}
 		Book currentBook = books.get(0);
 		UUID userId= currentBook.getUser_id();
 		
@@ -121,6 +129,7 @@ public class BookControler {
 			}
 		}
 		bookRepository.delete(books.get(0));
+		logger.info("Book is deleted from the system");
 		SecurityContextHolder.getContext().setAuthentication(null);		
 	}
 	
@@ -161,7 +170,9 @@ public class BookControler {
 		newBook.setBook_created(new Date());
 		
 		SecurityContextHolder.getContext().setAuthentication(null);
-        return bookRepository.save(newBook);
+		logger.info("Book is addded to the system");
+        
+		return bookRepository.save(newBook);
     }
 	private BookWithImages getABook(Book book) {
 		List<File> bookImages = new ArrayList<File>();
