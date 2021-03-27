@@ -13,6 +13,8 @@ import com.example.demo.repository.AuthorityRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.UserdbRepository;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.timgroup.statsd.StatsDClient;
+
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,12 +42,18 @@ public class UserController  {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
+	@Autowired
+	private StatsDClient statsd;
 	
 	@RequestMapping(path = "/v1/user/self" ,method = RequestMethod.GET, produces = "application/json")
 	@ResponseStatus(HttpStatus.OK) 
 	@JsonView(User.WithoutPasswordView.class)
 	@ResponseBody
 	public User foo(Principal principal) {
+		
+	  statsd.incrementCounter("getuser");	
+	  long start = System.currentTimeMillis();
+		
 	  Authentication authentication = (Authentication) principal;
 	  org.springframework.security.core.userdetails.User user = 
 			  (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
@@ -57,6 +65,9 @@ public class UserController  {
 	  
 	  SecurityContextHolder.getContext().setAuthentication(null);
 	  
+	  long end = System.currentTimeMillis();
+	  statsd.recordExecutionTime("getuser.time", end-start);
+		
 	  return realUser;
 	}
 	
@@ -66,7 +77,9 @@ public class UserController  {
 	@JsonView(User.WithoutPasswordView.class)
 	@ResponseBody
     public User create(@RequestBody UserRequested userreq ) {
-		System.out.println(userreq);
+		statsd.incrementCounter("postuser");
+		long start = System.currentTimeMillis();
+
 		/*If one of the fields is absent, then return bad request error*/
 		if(userreq == null || userreq.getUsername() == null || userreq.getPassword() == null || userreq.getFirst_name()== null || userreq.getLast_name() == null)
 			 throw new BedRequestException();
@@ -116,16 +129,27 @@ public class UserController  {
 		authRepository.save(aut);
 		
 
-		return userRepository.save(user);
+		/*Run query*/
+		User nUser = userRepository.save(user);
+		
+		
+		long end = System.currentTimeMillis();
+		statsd.recordExecutionTime("getuser.time", end-start);
+		
+		return nUser;
     }
 
 	@RequestMapping(path = "/v1/user/self", method = RequestMethod.PUT, produces = "application/json", consumes = "application/json")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public User update(@RequestBody  UserUpdated userup, Principal principal) {
+		statsd.incrementCounter("updateuser");	
+		long start = System.currentTimeMillis();
+		
+		
 		/*If one of the fields is absent, then return bad request error*/
     	if(userup == null || (userup.getFirst_name()==null || userup.getLast_name()==null || userup.getPassword()== null) || userup.getUsername() != null || userup.getId() != null) 
     		 throw new BedRequestException();
-       	
+    	
     	Authentication authentication = (Authentication) principal;
   	  	org.springframework.security.core.userdetails.User user = 
   			  (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
@@ -154,10 +178,17 @@ public class UserController  {
 
 		 }
 		 User_db user_db = new User_db(username,encoded,true); 
-		 userdbRepository.save(user_db);/*password updated in authorities table */
-		 		 
+		 userdbRepository.save(user_db);/*password updated in authorities table */		 
 		 realUser.setAccount_updated(new Date());  /* Updating date-time*/
+		 
+		 /*run queries*/
+		 User rUser = userRepository.save(realUser);
+		
 		 SecurityContextHolder.getContext().setAuthentication(null);
-         return userRepository.save(realUser);
+         
+         long end = System.currentTimeMillis();
+ 		 statsd.recordExecutionTime("updateuser.time", end-start);
+ 		
+ 		 return rUser;
     }	
 }
