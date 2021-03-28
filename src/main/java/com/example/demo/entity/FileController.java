@@ -32,7 +32,7 @@ import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.BookRepository;
 import com.example.demo.repository.FileRepository;
 import com.example.demo.repository.UserRepository;
-//import com.timgroup.statsd.NonBlockingStatsDClient;
+import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 
 import software.amazon.awssdk.services.s3.S3Client;
@@ -48,9 +48,9 @@ import software.amazon.awssdk.core.sync.RequestBody;
 @RestController
 public class FileController {
 	private final static Logger logger =LoggerFactory.getLogger(UserController.class);
-	//private static final StatsDClient statsd = new NonBlockingStatsDClient("csye6225.webapp", "statsd-host", 8125);
-	@Autowired
-	StatsDClient statsd;
+	private static final StatsDClient statsd = new NonBlockingStatsDClient("csye6225.webapp", "localhost", 8125);
+	//@Autowired
+	//StatsDClient statsd;
 	
 	@Autowired
     UserRepository userRepository;
