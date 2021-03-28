@@ -22,6 +22,7 @@ import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.BookRepository;
 import com.example.demo.repository.FileRepository;
 import com.example.demo.repository.UserRepository;
+//import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 
 import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider;
@@ -39,7 +40,11 @@ import org.slf4j.LoggerFactory;
 public class BookControler {
 	
 	private final static Logger logger =LoggerFactory.getLogger(BookControler.class);
-	 
+	
+	//private static final StatsDClient statsd = new NonBlockingStatsDClient("csye6225.webapp", "statsd-host", 8125);
+	@Autowired
+	StatsDClient statsd;
+	
 	@Autowired
     BookRepository bookRepository;
 	
@@ -53,39 +58,59 @@ public class BookControler {
 	@RequestMapping(path = "/books" ,method = RequestMethod.GET, produces = "application/json")
 	@ResponseStatus(HttpStatus.OK)
     public List<BookWithImages> index(){
+		long start = System.currentTimeMillis();
+		statsd.incrementCounter("getbooks");
+		
 		List<BookWithImages> bwis = new ArrayList<BookWithImages>();
 		List<Book> allbooks = bookRepository.findAll();
 		for(Book b: allbooks) {
 			BookWithImages bwi = getABook(b);
 			bwis.add(bwi);
-		}		
+		}
+		long end = System.currentTimeMillis();
+		statsd.recordExecutionTime("getbooks.time", end-start);
         return bwis; 
     }
 	
 	@RequestMapping(path = "/books/{id}" ,method = RequestMethod.GET, produces = "application/json")
 	@ResponseStatus(HttpStatus.OK) 
 	public BookWithImages getBook(@PathVariable UUID id) {
+		
+		statsd.incrementCounter("getbook");
+		long start = System.currentTimeMillis();
+		
 		List<Book> books = bookRepository.findById(id);
 		if(books.isEmpty())
 			throw new NotFoundException();
 		
-		return getABook(books.get(0));
+		BookWithImages bwi= getABook(books.get(0));
+		
+		long end = System.currentTimeMillis();
+		statsd.recordExecutionTime("getbook.time", end-start);
+		
+		return bwi;
 	}
 
 	@RequestMapping(path = "/books/{id}" ,method = RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT) 
 	public void delete(@PathVariable UUID id) {
+		statsd.incrementCounter("deletebook");
+		long start = System.currentTimeMillis();
+		
 		List<Book> books = bookRepository.findById(id);
+		
 		if(books.isEmpty()) {
 			logger.error("Book is not found");
 			throw new NotFoundException() ;
 		}
+		
 		Book currentBook = books.get(0);
 		UUID userId= currentBook.getUser_id();
 		
 		List<User> userl = userRepository.findById(userId);
 		System.out.println(userl.get(0));
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();		
+		
 		if(!userl.get(0).getUsername().equalsIgnoreCase(username))
 			throw new NotFoundException() ;
 
@@ -129,8 +154,11 @@ public class BookControler {
 			}
 		}
 		bookRepository.delete(books.get(0));
-		logger.info("Book is deleted from the system");
-		SecurityContextHolder.getContext().setAuthentication(null);		
+		logger.info("Book and related images are deleted from the system");
+		SecurityContextHolder.getContext().setAuthentication(null);	
+		
+		long end = System.currentTimeMillis();
+		statsd.recordExecutionTime("deletebook.time", end-start);
 	}
 	
 	@RequestMapping(path = "/books" ,method = RequestMethod.POST, produces = "application/json",consumes = "application/json")
@@ -142,6 +170,8 @@ public class BookControler {
 			  "isbn": "978-0132126953",
 			  "published_date": "May, 2020"
 			}*/
+		statsd.incrementCounter("postbook");
+		long start = System.currentTimeMillis();
 		
 		if(book == null || book.getAuthor()==null || book.getTitle() ==null || book.getIsbn() == null || book.getPublished_date() == null) 
    		 throw new BedRequestException();
@@ -171,8 +201,12 @@ public class BookControler {
 		
 		SecurityContextHolder.getContext().setAuthentication(null);
 		logger.info("Book is addded to the system");
-        
-		return bookRepository.save(newBook);
+		Book lbook = bookRepository.save(newBook);
+		
+		long end = System.currentTimeMillis();
+		statsd.recordExecutionTime("postbook.time", end-start);
+		return lbook;
+		
     }
 	private BookWithImages getABook(Book book) {
 		List<File> bookImages = new ArrayList<File>();

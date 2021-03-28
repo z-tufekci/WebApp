@@ -12,6 +12,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,6 +32,8 @@ import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.BookRepository;
 import com.example.demo.repository.FileRepository;
 import com.example.demo.repository.UserRepository;
+//import com.timgroup.statsd.NonBlockingStatsDClient;
+import com.timgroup.statsd.StatsDClient;
 
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.regions.Region;
@@ -43,7 +47,10 @@ import software.amazon.awssdk.core.sync.RequestBody;
 
 @RestController
 public class FileController {
-
+	private final static Logger logger =LoggerFactory.getLogger(UserController.class);
+	//private static final StatsDClient statsd = new NonBlockingStatsDClient("csye6225.webapp", "statsd-host", 8125);
+	@Autowired
+	StatsDClient statsd;
 	
 	@Autowired
     UserRepository userRepository;
@@ -57,95 +64,91 @@ public class FileController {
 	@RequestMapping(path = "/books/{book_id}/image" ,method = RequestMethod.POST ,consumes = "multipart/form-data",produces = "application/json") // @NotNull
 	@ResponseStatus(HttpStatus.OK)
     public File index(@PathVariable UUID book_id, @RequestPart("file") @Valid @NotNull @NotBlank  MultipartFile file){
-		//@RequestPart("file") @Valid @NotNull @NotBlank MultipartFile file
-		System.out.println("Book_id "+book_id);
+
+		statsd.incrementCounter("postimage");	
+		long start = System.currentTimeMillis();
+
 		String contentType = file.getContentType();
-		System.out.println("Content Type: "+contentType);
 		if(!contentType.equalsIgnoreCase("image/png") && !contentType.equalsIgnoreCase("image/jpeg") ) {
+			logger.error("The content type is invalid.PNG,JPG or JPEG is valid content.");
 			throw new BedRequestException();
 		}
-		
 		
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();		
 		List<Book> bookl = bookRepository.findById(book_id);
 		List<User> userl = userRepository.findByUsername(username);
-		System.out.println("Book owner: "+bookl.get(0).getUser_id());
-		System.out.println("Authanticated User:"+userl.get(0).getId());
+		
 		if(!bookl.get(0).getUser_id().equals(userl.get(0).getId()))
 					throw new NotFoundException() ;
 		
 		byte[] mediaBytes = null; 
-		System.out.println("Geldim");
 		try {
 			mediaBytes = file.getBytes();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		Region region = Region.US_EAST_1; //region(region).
+		Region region = Region.US_EAST_1;
 
 		S3Client s3 = S3Client.builder()
 	              .credentialsProvider(InstanceProfileCredentialsProvider.builder().build()).region(region)
 	              .build();
 		
         String bucketName = System.getProperty("s3_BUCKET");  
-        System.out.println("Uploading object...");
-        System.out.println(bucketName);
         File newFile = new File();
 		UUID uuid = java.util.UUID.randomUUID();
-		System.out.println(uuid);
+		
 		//ObjectKey:bookid/imageid/filename
         String key = ""+book_id+"/"+uuid+""+file.getOriginalFilename();
-        System.out.println(uuid);
-        System.out.println(key);
+        
         Map<String,String> metadata = new HashMap<>();          
         String value = "x-amz-meta-"+book_id+"/"+uuid+"/"+file.getOriginalFilename();
         metadata.put("My metadata", value);
         //Metadata: My metadata, x-amz-meta-bookid/imageid/filename
-        System.out.println("Before Put Request...");
         PutObjectRequest objectRequest = PutObjectRequest.builder().bucket(bucketName).key(key).metadata(metadata).build();
-        System.out.println("After Put Request...");
         s3.putObject(objectRequest, RequestBody.fromBytes(mediaBytes));
-        System.out.println("After Put Object...");
-				
+        		
 		newFile.setId(uuid);
 		newFile.setCreated_date(new Date());
 		newFile.setUserId(bookl.get(0).getUser_id());
 		newFile.setFilename(file.getOriginalFilename());
 		newFile.setS3_object_name(value);
-		SecurityContextHolder.getContext().setAuthentication(null);
-		System.out.println(newFile);
-        return fileRepository.save(newFile); 
+		
+		File nFile =  fileRepository.save(newFile); 
+        
+        long end = System.currentTimeMillis();
+  	    statsd.recordExecutionTime("postimage.time", end-start);
+  	    logger.info("The image is saved.");
+  	    SecurityContextHolder.getContext().setAuthentication(null);
+		
+  	    return nFile;
     }
 	
 	@RequestMapping(path = "/books/{book_id}/image/{image_id}" ,method = RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT) 
 	public void delete(@PathVariable UUID book_id,@PathVariable UUID image_id) {
-		
-		System.out.println("Image ID: " + image_id);
-		System.out.println("Hello I am here!!");
+		statsd.incrementCounter("deleteimage");	
+		long start = System.currentTimeMillis();
 		
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();		
 		List<User> userl = userRepository.findByUsername(username);//Authanticated user
 
 		List<Book> books = bookRepository.findById(book_id);
-		System.out.println(books.isEmpty());
-		if(books.isEmpty())
+		if(books.isEmpty()) {
+			logger.error("The book is not found.");
 			throw new NotFoundException() ;
-		
+		}
 		Book currentBook = books.get(0);
 		UUID userId= currentBook.getUser_id();//The owner of the book
 		
-		System.out.println(userId+"   "+userl.get(0).getId());
 		if(!userId.equals(userl.get(0).getId()))
 			throw new NotFoundException() ;
 		
 		List<File> files = fileRepository.findById(image_id);
-		System.out.println("File is empty "+files.isEmpty());
-		if(files.isEmpty())
+		if(files.isEmpty()) {
+			logger.error("The image is not found.");
 			throw new NotFoundException() ;
-		
+		}
 		Region region = Region.US_EAST_1; //region(region).
 		
 		S3Client s3 = S3Client.builder()
@@ -168,10 +171,14 @@ public class FileController {
             System.err.println(e.awsErrorDetails().errorMessage());
             System.exit(1);
         }
-        System.out.println("Done!");
 		
-		SecurityContextHolder.getContext().setAuthentication(null);			
 		fileRepository.delete(files.get(0));
+		SecurityContextHolder.getContext().setAuthentication(null);			
+		
+		
+		long end = System.currentTimeMillis();
+  	    statsd.recordExecutionTime("deletetimage.time", end-start);
+  	    logger.info("The image is deleted.");
 	}
 	
 	
