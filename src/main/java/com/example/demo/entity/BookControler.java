@@ -69,6 +69,7 @@ public class BookControler {
 		}
 		long end = System.currentTimeMillis();
 		statsd.recordExecutionTime("getbooks.time", end-start);
+		logger.info("All books are showed");
         return bwis; 
     }
 	
@@ -87,7 +88,7 @@ public class BookControler {
 		
 		long end = System.currentTimeMillis();
 		statsd.recordExecutionTime("getbook.time", end-start);
-		
+		logger.info("The book is showed");
 		return bwi;
 	}
 
@@ -108,7 +109,6 @@ public class BookControler {
 		UUID userId= currentBook.getUser_id();
 		
 		List<User> userl = userRepository.findById(userId);
-		System.out.println(userl.get(0));
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();		
 		
 		if(!userl.get(0).getUsername().equalsIgnoreCase(username))
