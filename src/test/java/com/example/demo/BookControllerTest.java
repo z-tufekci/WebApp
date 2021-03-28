@@ -45,8 +45,8 @@ public class BookControllerTest {
 	@MockBean
 	private DataSource dataSource;
 	
-	@MockBean
-	private StatsDClient statsd;
+	//@MockBean
+	//private StatsDClient statsd;
 	
 	
 	//@Test

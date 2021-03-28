@@ -13,7 +13,7 @@ import com.example.demo.repository.AuthorityRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.UserdbRepository;
 import com.fasterxml.jackson.annotation.JsonView;
-//import com.timgroup.statsd.NonBlockingStatsDClient;
+import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -33,10 +33,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @RestController
 public class UserController  {
 	private final static Logger logger =LoggerFactory.getLogger(UserController.class);
-	//private static final StatsDClient statsd = new NonBlockingStatsDClient("csye6225.webapp", "statsd-host", 8125);
+	private static final StatsDClient statsd = new NonBlockingStatsDClient("csye6225.webapp", "localhost", 8125);
 
-	@Autowired
-	StatsDClient statsd;
+	//@Autowired
+	//StatsDClient statsd;
 	
 	@Autowired
     UserRepository userRepository;
