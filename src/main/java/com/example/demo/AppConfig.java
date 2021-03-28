@@ -24,15 +24,4 @@ public class AppConfig {
         
         return dataSource;
     }
-    
-    @Bean
-    public StatsDClient statsd(
-            @Value("${metrics.statsd.host:statsd-host}") String host,
-            @Value("${metrics.statsd.port:8125}") int port,
-            @Value("${metrics.prefix:csye6225.webapp}") String prefix
-    ) {
-        return new NonBlockingStatsDClient(prefix, host, port);
-    }
-    
-
 }
