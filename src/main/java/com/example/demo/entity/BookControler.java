@@ -22,6 +22,7 @@ import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.BookRepository;
 import com.example.demo.repository.FileRepository;
 import com.example.demo.repository.UserRepository;
+//import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 
 import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider;
@@ -39,7 +40,11 @@ import org.slf4j.LoggerFactory;
 public class BookControler {
 	
 	private final static Logger logger =LoggerFactory.getLogger(BookControler.class);
-	 
+	
+	//private static final StatsDClient statsd = new NonBlockingStatsDClient("csye6225.webapp", "statsd-host", 8125);
+	@Autowired
+	StatsDClient statsd;
+	
 	@Autowired
     BookRepository bookRepository;
 	
@@ -49,8 +54,6 @@ public class BookControler {
 	@Autowired
     FileRepository fileRepository;
 	
-	@Autowired
-	private StatsDClient statsd;
 	
 	@RequestMapping(path = "/books" ,method = RequestMethod.GET, produces = "application/json")
 	@ResponseStatus(HttpStatus.OK)
@@ -151,7 +154,7 @@ public class BookControler {
 			}
 		}
 		bookRepository.delete(books.get(0));
-		logger.info("Book is deleted from the system");
+		logger.info("Book and related images are deleted from the system");
 		SecurityContextHolder.getContext().setAuthentication(null);	
 		
 		long end = System.currentTimeMillis();

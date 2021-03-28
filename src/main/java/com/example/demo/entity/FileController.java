@@ -12,6 +12,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,6 +32,7 @@ import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.BookRepository;
 import com.example.demo.repository.FileRepository;
 import com.example.demo.repository.UserRepository;
+//import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 
 import software.amazon.awssdk.services.s3.S3Client;
@@ -44,7 +47,10 @@ import software.amazon.awssdk.core.sync.RequestBody;
 
 @RestController
 public class FileController {
-
+	private final static Logger logger =LoggerFactory.getLogger(UserController.class);
+	//private static final StatsDClient statsd = new NonBlockingStatsDClient("csye6225.webapp", "statsd-host", 8125);
+	@Autowired
+	StatsDClient statsd;
 	
 	@Autowired
     UserRepository userRepository;
@@ -55,9 +61,6 @@ public class FileController {
 	@Autowired
     FileRepository fileRepository;
 	
-	@Autowired
-	private StatsDClient statsd;
-	
 	@RequestMapping(path = "/books/{book_id}/image" ,method = RequestMethod.POST ,consumes = "multipart/form-data",produces = "application/json") // @NotNull
 	@ResponseStatus(HttpStatus.OK)
     public File index(@PathVariable UUID book_id, @RequestPart("file") @Valid @NotNull @NotBlank  MultipartFile file){
@@ -67,6 +70,7 @@ public class FileController {
 
 		String contentType = file.getContentType();
 		if(!contentType.equalsIgnoreCase("image/png") && !contentType.equalsIgnoreCase("image/jpeg") ) {
+			logger.error("The content type is invalid.PNG,JPG or JPEG is valid content.");
 			throw new BedRequestException();
 		}
 		
@@ -114,6 +118,7 @@ public class FileController {
         
         long end = System.currentTimeMillis();
   	    statsd.recordExecutionTime("postimage.time", end-start);
+  	    logger.info("The image is saved.");
   	    SecurityContextHolder.getContext().setAuthentication(null);
 		
   	    return nFile;
@@ -129,9 +134,10 @@ public class FileController {
 		List<User> userl = userRepository.findByUsername(username);//Authanticated user
 
 		List<Book> books = bookRepository.findById(book_id);
-		if(books.isEmpty())
+		if(books.isEmpty()) {
+			logger.error("The book is not found.");
 			throw new NotFoundException() ;
-		
+		}
 		Book currentBook = books.get(0);
 		UUID userId= currentBook.getUser_id();//The owner of the book
 		
@@ -139,9 +145,10 @@ public class FileController {
 			throw new NotFoundException() ;
 		
 		List<File> files = fileRepository.findById(image_id);
-		if(files.isEmpty())
+		if(files.isEmpty()) {
+			logger.error("The image is not found.");
 			throw new NotFoundException() ;
-		
+		}
 		Region region = Region.US_EAST_1; //region(region).
 		
 		S3Client s3 = S3Client.builder()
@@ -171,7 +178,7 @@ public class FileController {
 		
 		long end = System.currentTimeMillis();
   	    statsd.recordExecutionTime("deletetimage.time", end-start);
-		
+  	    logger.info("The image is deleted.");
 	}
 	
 	
