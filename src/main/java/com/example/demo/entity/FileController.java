@@ -49,8 +49,6 @@ import software.amazon.awssdk.core.sync.RequestBody;
 public class FileController {
 	private final static Logger logger =LoggerFactory.getLogger(UserController.class);
 	private static final StatsDClient statsd = new NonBlockingStatsDClient("csye6225.webapp", "localhost", 8125);
-	//@Autowired
-	//StatsDClient statsd;
 	
 	@Autowired
     UserRepository userRepository;
@@ -89,7 +87,7 @@ public class FileController {
 		}
 
 		Region region = Region.US_EAST_1;
-
+		long s3_service_start = System.currentTimeMillis();
 		S3Client s3 = S3Client.builder()
 	              .credentialsProvider(InstanceProfileCredentialsProvider.builder().build()).region(region)
 	              .build();
@@ -107,16 +105,21 @@ public class FileController {
         //Metadata: My metadata, x-amz-meta-bookid/imageid/filename
         PutObjectRequest objectRequest = PutObjectRequest.builder().bucket(bucketName).key(key).metadata(metadata).build();
         s3.putObject(objectRequest, RequestBody.fromBytes(mediaBytes));
-        		
+        
+        long s3_service_end = System.currentTimeMillis();
+        statsd.recordExecutionTime("s3service_putimage", s3_service_end -s3_service_start);
+        
 		newFile.setId(uuid);
 		newFile.setCreated_date(new Date());
 		newFile.setUserId(bookl.get(0).getUser_id());
 		newFile.setFilename(file.getOriginalFilename());
 		newFile.setS3_object_name(value);
 		
+		long query_start = System.currentTimeMillis();
 		File nFile =  fileRepository.save(newFile); 
-        
         long end = System.currentTimeMillis();
+        statsd.recordExecutionTime("query_saveimage", end-query_start);
+        
   	    statsd.recordExecutionTime("postimage.time", end-start);
   	    logger.info("The image is saved.");
   	    SecurityContextHolder.getContext().setAuthentication(null);
@@ -149,8 +152,9 @@ public class FileController {
 			logger.error("The image is not found.");
 			throw new NotFoundException() ;
 		}
-		Region region = Region.US_EAST_1; //region(region).
 		
+		Region region = Region.US_EAST_1; //region(region).
+		long s3_service_start = System.currentTimeMillis();
 		S3Client s3 = S3Client.builder()
 	              .credentialsProvider(InstanceProfileCredentialsProvider.builder().build()).region(region)
 	              .build();
@@ -171,8 +175,15 @@ public class FileController {
             System.err.println(e.awsErrorDetails().errorMessage());
             System.exit(1);
         }
+        long s3_service_end = System.currentTimeMillis();
+        statsd.recordExecutionTime("s3service_deleteimage", s3_service_end -s3_service_start);
 		
+        
+        long query_start = System.currentTimeMillis();
 		fileRepository.delete(files.get(0));
+		long query_end = System.currentTimeMillis();
+		statsd.recordExecutionTime("query_deleteimage", query_end-query_start);
+		
 		SecurityContextHolder.getContext().setAuthentication(null);			
 		
 		
