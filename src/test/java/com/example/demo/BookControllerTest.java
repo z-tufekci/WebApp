@@ -29,7 +29,6 @@ import com.timgroup.statsd.StatsDClient;
 @WebMvcTest(BookControler.class)
 public class BookControllerTest {
 	
-	
 	@Autowired
     private MockMvc mockmvc;
 	
@@ -45,11 +44,7 @@ public class BookControllerTest {
 	@MockBean
 	private DataSource dataSource;
 	
-	//@MockBean
-	//private StatsDClient statsd;
-	
-	
-	//@Test
+	@Test
 	public void testGetBooks() throws Exception {
 		List<Book> listBook = new ArrayList<Book>();
 		listBook.add(new Book(java.util.UUID.randomUUID(),"123-456-789","ABC","21 March", "author", new Date(), java.util.UUID.randomUUID()));
