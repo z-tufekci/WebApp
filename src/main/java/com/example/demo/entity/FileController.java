@@ -76,8 +76,10 @@ public class FileController {
 		List<Book> bookl = bookRepository.findById(book_id);
 		List<User> userl = userRepository.findByUsername(username);
 		
-		if(!bookl.get(0).getUser_id().equals(userl.get(0).getId()))
+		if(!bookl.get(0).getUser_id().equals(userl.get(0).getId())) {
+					logger.error("The user is not the owner of the book");
 					throw new NotFoundException() ;
+		}
 		
 		byte[] mediaBytes = null; 
 		try {
@@ -172,6 +174,7 @@ public class FileController {
                     .build();
             s3.deleteObjects(dor);
         } catch (S3Exception e) {
+        	logger.error("S3 service image delete error while deleting image.");
             System.err.println(e.awsErrorDetails().errorMessage());
             System.exit(1);
         }

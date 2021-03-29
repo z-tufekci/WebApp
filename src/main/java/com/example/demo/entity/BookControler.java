@@ -83,7 +83,7 @@ public class BookControler {
 		statsd.recordExecutionTime("query_findbook", query_end-start);
 		
 		if(books.isEmpty()) {
-			logger.info("The book is not found");
+			logger.error("The book is not found");
 			throw new NotFoundException();
 		}
 		BookWithImages bwi= getABook(books.get(0));
@@ -151,6 +151,7 @@ public class BookControler {
 			                    .build();
 			            s3.deleteObjects(dor);
 			        } catch (S3Exception e) {
+			        	logger.error("S3 service image delete error while deleting book.");
 			            System.err.println(e.awsErrorDetails().errorMessage());
 			            System.exit(1);
 			        }
@@ -185,14 +186,18 @@ public class BookControler {
 		statsd.incrementCounter("postbook");
 		long start = System.currentTimeMillis();
 		
-		if(book == null || book.getAuthor()==null || book.getTitle() ==null || book.getIsbn() == null || book.getPublished_date() == null) 
-   		 throw new BedRequestException();
+		if(book == null || book.getAuthor()==null || book.getTitle() ==null || book.getIsbn() == null || book.getPublished_date() == null) {
+			logger.error("One of the required fields is empty");
+			throw new BedRequestException();
+		}
+   		 
 		
 		/*Check if ISBN number already exists or not*/
 		List<Book> bList =  bookRepository.findByIsbn(book.getIsbn());
-		if(!bList.isEmpty())
+		if(!bList.isEmpty()) {
+			logger.error("Book ISBN number already exists.");
 			throw new BedRequestException();
-		
+		}
 		Authentication authentication = (Authentication) principal;
   	  	org.springframework.security.core.userdetails.User user = 
   			  (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
@@ -226,7 +231,12 @@ public class BookControler {
     }
 	private BookWithImages getABook(Book book) {
 		List<File> bookImages = new ArrayList<File>();
+		
+		long query_start = System.currentTimeMillis();
 		List<File> images= fileRepository.findByUserId(book.getUser_id());
+		long query_end = System.currentTimeMillis();
+		statsd.recordExecutionTime("query_getimagesofbook", query_end-query_start);
+		
 		if(!images.isEmpty()) {
 			for(File image : images) {
 				String s3name = image.getS3_object_name();
