@@ -35,9 +35,6 @@ public class UserController  {
 	private final static Logger logger =LoggerFactory.getLogger(UserController.class);
 	private static final StatsDClient statsd = new NonBlockingStatsDClient("csye6225.webapp", "localhost", 8125);
 
-	//@Autowired
-	//StatsDClient statsd;
-	
 	@Autowired
     UserRepository userRepository;
 	
@@ -65,9 +62,13 @@ public class UserController  {
 			  (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
 	  
 	  String username = user.getUsername(); 
-	  List<User> list = userRepository.findByUsername(username); /*retrieve user from database*/
-	  User realUser = list.get(0);
 	  
+	  long query_start = System.currentTimeMillis();
+	  List<User> list = userRepository.findByUsername(username); /*retrieve user from database*/
+	  long query_end = System.currentTimeMillis();
+	  statsd.recordExecutionTime("query_finduser", query_end-query_start);
+	  
+	  User realUser = list.get(0); 
 	  SecurityContextHolder.getContext().setAuthentication(null);
 	  
 	  long end = System.currentTimeMillis();
@@ -90,9 +91,7 @@ public class UserController  {
 			logger.error("One of the required fields is absent");
 			throw new BedRequestException();
 		}
-			
-		
-		
+	
 		String username = userreq.getUsername();		
 		List<User> userL = userRepository.findByUsername(username); /*If username exists, bad request error */
 		if(!userL.isEmpty()) {
@@ -133,11 +132,12 @@ public class UserController  {
 		
 
 		/*Run query*/
+		long query_start = System.currentTimeMillis();
 		User nUser = userRepository.save(user);
-		
-		
 		long end = System.currentTimeMillis();
-		statsd.recordExecutionTime("getuser.time", end-start);
+		statsd.recordExecutionTime("query_saveuser", end-query_start);
+		
+		statsd.recordExecutionTime("postuser.time", end-start);
 		logger.info("The username is saved");
 		return nUser;
     }
@@ -187,12 +187,13 @@ public class UserController  {
 		 userdbRepository.save(user_db);			/*password updated in authorities table */		 
 		 realUser.setAccount_updated(new Date());   /* Updating date-time*/
 		 
-		 /*run queries*/
-		 User rUser = userRepository.save(realUser);
-		
+		 
 		 SecurityContextHolder.getContext().setAuthentication(null);
-         
-         long end = System.currentTimeMillis();
+		 /*run queries*/
+		 long query_start = System.currentTimeMillis();
+		 User rUser = userRepository.save(realUser);
+		 long end = System.currentTimeMillis();
+		 statsd.recordExecutionTime("query_updateuser", end-query_start);
  		 statsd.recordExecutionTime("updateuser.time", end-start);
  		 logger.info("The username is updated");
  		 return rUser;

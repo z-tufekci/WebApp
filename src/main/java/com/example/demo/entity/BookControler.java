@@ -42,8 +42,6 @@ public class BookControler {
 	private final static Logger logger =LoggerFactory.getLogger(BookControler.class);
 	
 	private static final StatsDClient statsd = new NonBlockingStatsDClient("csye6225.webapp", "localhost", 8125);
-	//@Autowired
-	//StatsDClient statsd;
 	
 	@Autowired
     BookRepository bookRepository;
@@ -81,9 +79,13 @@ public class BookControler {
 		long start = System.currentTimeMillis();
 		
 		List<Book> books = bookRepository.findById(id);
-		if(books.isEmpty())
-			throw new NotFoundException();
+		long query_end = System.currentTimeMillis();
+		statsd.recordExecutionTime("query_findbook", query_end-start);
 		
+		if(books.isEmpty()) {
+			logger.error("The book is not found");
+			throw new NotFoundException();
+		}
 		BookWithImages bwi= getABook(books.get(0));
 		
 		long end = System.currentTimeMillis();
@@ -115,6 +117,7 @@ public class BookControler {
 			throw new NotFoundException() ;
 
 		/*Connect to s3 bucket*/
+		
 		Region region = Region.US_EAST_1; //region(region).
 		
 		S3Client s3 = S3Client.builder()
@@ -125,6 +128,8 @@ public class BookControler {
 
 		
 		List<File> images= fileRepository.findByUserId(userId);
+		
+		long s3_service_start = System.currentTimeMillis();
 		if(!images.isEmpty()) {
 			for(File image : images) {
 				String s3name = image.getS3_object_name();
@@ -132,9 +137,9 @@ public class BookControler {
 				UUID uuid = UUID.fromString(bookID);
 				if(uuid.equals(currentBook.getId())) {
 
-					//delete image from s3 and database
+					//delete image from s3 and database					
 					fileRepository.delete(image);
-					
+
 					String objectName = ""+uuid+"/"+image.getId()+""+image.getFilename();
 					ArrayList<ObjectIdentifier> toDelete = new ArrayList<ObjectIdentifier>();
 			        toDelete.add(ObjectIdentifier.builder().key(objectName).build());
@@ -146,6 +151,7 @@ public class BookControler {
 			                    .build();
 			            s3.deleteObjects(dor);
 			        } catch (S3Exception e) {
+			        	logger.error("S3 service image delete error while deleting book.");
 			            System.err.println(e.awsErrorDetails().errorMessage());
 			            System.exit(1);
 			        }
@@ -153,7 +159,14 @@ public class BookControler {
 				}
 			}
 		}
+		long s3_service_end = System.currentTimeMillis();
+		statsd.recordExecutionTime("s3service_deletebook", s3_service_end -s3_service_start);
+		
+		long query_start = System.currentTimeMillis();
 		bookRepository.delete(books.get(0));
+		long query_end = System.currentTimeMillis();
+		statsd.recordExecutionTime("query_deletebook", query_end-query_start);
+		
 		logger.info("Book and related images are deleted from the system");
 		SecurityContextHolder.getContext().setAuthentication(null);	
 		
@@ -173,14 +186,18 @@ public class BookControler {
 		statsd.incrementCounter("postbook");
 		long start = System.currentTimeMillis();
 		
-		if(book == null || book.getAuthor()==null || book.getTitle() ==null || book.getIsbn() == null || book.getPublished_date() == null) 
-   		 throw new BedRequestException();
+		if(book == null || book.getAuthor()==null || book.getTitle() ==null || book.getIsbn() == null || book.getPublished_date() == null) {
+			logger.error("One of the required fields is empty");
+			throw new BedRequestException();
+		}
+   		 
 		
 		/*Check if ISBN number already exists or not*/
 		List<Book> bList =  bookRepository.findByIsbn(book.getIsbn());
-		if(!bList.isEmpty())
+		if(!bList.isEmpty()) {
+			logger.error("Book ISBN number already exists.");
 			throw new BedRequestException();
-		
+		}
 		Authentication authentication = (Authentication) principal;
   	  	org.springframework.security.core.userdetails.User user = 
   			  (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
@@ -199,9 +216,13 @@ public class BookControler {
 		newBook.setUser_id(realUser.getId());
 		newBook.setBook_created(new Date());
 		
+		long query_start = System.currentTimeMillis();
+		Book lbook = bookRepository.save(newBook);
+		long query_end = System.currentTimeMillis();
+		statsd.recordExecutionTime("query_savebook", query_end-query_start);
+		
 		SecurityContextHolder.getContext().setAuthentication(null);
 		logger.info("Book is addded to the system");
-		Book lbook = bookRepository.save(newBook);
 		
 		long end = System.currentTimeMillis();
 		statsd.recordExecutionTime("postbook.time", end-start);
@@ -210,7 +231,12 @@ public class BookControler {
     }
 	private BookWithImages getABook(Book book) {
 		List<File> bookImages = new ArrayList<File>();
+		
+		long query_start = System.currentTimeMillis();
 		List<File> images= fileRepository.findByUserId(book.getUser_id());
+		long query_end = System.currentTimeMillis();
+		statsd.recordExecutionTime("query_getimagesofbook", query_end-query_start);
+		
 		if(!images.isEmpty()) {
 			for(File image : images) {
 				String s3name = image.getS3_object_name();
