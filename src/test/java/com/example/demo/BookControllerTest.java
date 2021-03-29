@@ -22,12 +22,12 @@ import com.example.demo.entity.BookControler;
 import com.example.demo.repository.BookRepository;
 import com.example.demo.repository.FileRepository;
 import com.example.demo.repository.UserRepository;
+import com.timgroup.statsd.StatsDClient;
 
 
 @AutoConfigureTestDatabase(replace=Replace.NONE)
 @WebMvcTest(BookControler.class)
 public class BookControllerTest {
-	
 	
 	@Autowired
     private MockMvc mockmvc;
@@ -49,7 +49,7 @@ public class BookControllerTest {
 		List<Book> listBook = new ArrayList<Book>();
 		listBook.add(new Book(java.util.UUID.randomUUID(),"123-456-789","ABC","21 March", "author", new Date(), java.util.UUID.randomUUID()));
 		Mockito.when(bookRepository.findAll()).thenReturn(listBook);		
-		String url = "/mybooks";
+		String url = "/books";
 		mockmvc.perform(MockMvcRequestBuilders.get(url)).andExpect(MockMvcResultMatchers.status().isOk());		
 	}
 }

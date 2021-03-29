@@ -1,3 +1,5 @@
+Zeynep Tufekci-25 March 2021
+
 WEB APPLICATION : RESTFUL API
 ------------------------------------
 
@@ -28,7 +30,7 @@ User{
 	
 	String username	(email) example: jane.doe@example.com
 	
-	account_created	string($date-time) 	example: 2016-08-29T09:12:33.001Z
+	account_created	string($date-time) example: 2016-08-29T09:12:33.001Z
 	(readOnly)
 
 	account_updated	string($date-time)  example: 2016-08-29T09:12:33.001Z
