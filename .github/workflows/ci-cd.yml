@@ -34,14 +34,13 @@ jobs:
     - name: Build Deployment Artifact
       run: |
         mkdir codedeploy_artifact
-        zip -r ${{ env.ARTIFACT_NAME }} target/demo-0.0.1-SNAPSHOT.war script/*.sh appspec.yml cloudwatch-config.json
+        zip -r ${{ env.ARTIFACT_NAME }} target/ROOT.war script/*.sh appspec.yml cloudwatch-config.json
         mv ${{ env.ARTIFACT_NAME }} codedeploy_artifact/
         ls -al
         pwd
         cd codedeploy_artifact
         pwd
-        ls -al
-        
+        ls -al        
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
