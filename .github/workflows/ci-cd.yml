@@ -55,4 +55,4 @@ jobs:
 
     - name: Create Deployment
       run: |
-        aws deploy create-deployment --application-name ${{ env.CODEDEPLOY_APP_NAME }} --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name ${{ env.CODEDEPLOY_APP_DEPLOYGROUPNAME }} --s3-location bucket=${{ secrets.S3_BUCKET_NAME }},key=${{ env.ARTIFACT_NAME }},bundleType=zip
+        aws deploy create-deployment --application-name ${{ env.CODEDEPLOY_APP_NAME }} --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name ${{ env.CODEDEPLOY_APP_DEPLOYGROUPNAME }} --s3-location bucket=${{ secrets.S3_BUCKET_NAME }},key=${{ env.ARTIFACT_NAME }},bundleType=zip
