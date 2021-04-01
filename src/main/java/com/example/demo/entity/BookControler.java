@@ -35,6 +35,7 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.json.simple.JSONObject;
 
 @RestController
 public class BookControler {
@@ -52,6 +53,15 @@ public class BookControler {
 	@Autowired
     FileRepository fileRepository;
 	
+	@SuppressWarnings("unchecked")
+	@RequestMapping(path = "/" ,method = RequestMethod.GET, produces = "application/json")
+	@ResponseStatus(HttpStatus.OK)
+    public String welcome(){
+		JSONObject json = new JSONObject();
+		json.put("Date", new Date());
+		json.put("NAME:", "Zeynep Tufekci");	
+        return json.toString(); 
+    }
 	
 	@RequestMapping(path = "/books" ,method = RequestMethod.GET, produces = "application/json")
 	@ResponseStatus(HttpStatus.OK)
