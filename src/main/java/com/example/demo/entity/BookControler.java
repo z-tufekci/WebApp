@@ -27,6 +27,7 @@ import com.timgroup.statsd.StatsDClient;
 
 import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.regions.internal.util.EC2MetadataUtils;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.Delete;
 import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
@@ -58,8 +59,11 @@ public class BookControler {
 	@ResponseStatus(HttpStatus.OK)
     public String welcome(){
 		JSONObject json = new JSONObject();
-		json.put("Date", new Date());
-		json.put("NAME:", "Zeynep Tufekci");	
+		json.put("Date: ", new Date());
+		json.put("NAME: ", "Zeynep Tufekci");
+		EC2MetadataUtils.getPrivateIpAddress();
+		json.put("Private IP Address: ",EC2MetadataUtils.getPrivateIpAddress());
+		json.put("Instance Id: ",EC2MetadataUtils.getInstanceId());
         return json.toString(); 
     }
 	
