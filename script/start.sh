@@ -1,4 +1,5 @@
 #!/bin/bash
 
 #sudo systemctl start tomcat
-sudo bash /opt/tomcat/bin/catalina.sh run
+sudo chmod +x /opt/tomcat/bin/startup.sh
+sudo bash /opt/tomcat/bin/startup.sh run
