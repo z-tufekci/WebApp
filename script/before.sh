@@ -1,9 +1,9 @@
 #!/bin/bash
 
-sudo chmod 775 /opt/tomcat/webapps/ 
-sudo chmod 775 /opt/tomcat/work/ 
-sudo chmod 775 /opt/tomcat/temp/ 
-sudo chmod 775 /opt/tomcat/logs/
+#sudo chmod 775 /opt/tomcat/webapps/ 
+#sudo chmod 775 /opt/tomcat/work/ 
+#sudo chmod 775 /opt/tomcat/temp/ 
+#sudo chmod 775 /opt/tomcat/logs/
 
 sudo rm -rf /opt/tomcat/webapps/ROOT
 sudo rm -rf /opt/tomcat/webapps/ROOT.war
