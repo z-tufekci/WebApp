@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,6 +36,14 @@ import software.amazon.awssdk.services.s3.model.Delete;
 import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import software.amazon.awssdk.services.s3.model.S3Exception;
+
+import software.amazon.awssdk.services.sns.SnsClient;
+import software.amazon.awssdk.services.sns.model.PublishRequest;
+import software.amazon.awssdk.services.sns.model.PublishResponse;
+import software.amazon.awssdk.services.sns.model.SnsException;
+import software.amazon.awssdk.services.sts.StsClient;
+import software.amazon.awssdk.services.sts.model.GetCallerIdentityResponse;
+import software.amazon.awssdk.services.sts.model.StsException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -177,7 +188,7 @@ public class BookControler {
 		statsd.recordExecutionTime("s3service_deletebook", s3_service_end -s3_service_start);
 		
 		long query_start = System.currentTimeMillis();
-		bookRepository.delete(books.get(0));
+		bookRepository.delete(currentBook);
 		long query_end = System.currentTimeMillis();
 		statsd.recordExecutionTime("query_deletebook", query_end-query_start);
 		
@@ -186,11 +197,50 @@ public class BookControler {
 		
 		long end = System.currentTimeMillis();
 		statsd.recordExecutionTime("deletebook.time", end-start);
+		
+		StsClient stsClient = StsClient.builder()
+                .region(region)
+                .build();
+		String accountId = "831195153875";
+		try {
+            GetCallerIdentityResponse response = stsClient.getCallerIdentity();
+            accountId =	response.account();
+        } catch (StsException e) {
+            System.err.println(e.getMessage());
+            logger.error(e.getMessage());
+            System.exit(1);
+        }
+		
+		/*Connect SNS Client*/
+		SnsClient snsClient = SnsClient.builder()
+	                .region(region)
+	                .credentialsProvider(InstanceProfileCredentialsProvider.builder().build())
+	                .build();
+        
+		String message = currentBook+" username="+username+"\n BOOK IS DELETED"; 
+		String topicArn ="arn:aws:sns:us-east-1:"+accountId+":sns-topic";
+		try {
+	        PublishRequest request = PublishRequest.builder()
+	            .message(message)
+	            .topicArn(topicArn)
+	            .build();
+
+	        PublishResponse result = snsClient.publish(request);
+	        //System.out.println(result.messageId() + " Message sent. Status was " + result.sdkHttpResponse().statusCode());
+	        logger.info(result.messageId() + " Message sent. Status was " + result.sdkHttpResponse().statusCode());
+	     } catch (SnsException e) {
+	        //System.err.println(e.awsErrorDetails().errorMessage());
+	    	logger.error(e.awsErrorDetails().errorMessage());
+	    	System.exit(1);
+	     }
+		snsClient.close();
 	}
 	
 	@RequestMapping(path = "/books" ,method = RequestMethod.POST, produces = "application/json",consumes = "application/json")
 	@ResponseStatus(HttpStatus.OK)
-    public Book generateBook(@RequestBody Book book,Principal principal){
+    public Book generateBook(@RequestBody Book book,@RequestBody Principal principal,@RequestBody HttpServletRequest req){
+		
+		
 		   /* {
 			  "title": "Computer Networks",
 			  "author": "Andrew S. Tanenbaum",
@@ -240,6 +290,47 @@ public class BookControler {
 		
 		long end = System.currentTimeMillis();
 		statsd.recordExecutionTime("postbook.time", end-start);
+		
+		Region region = Region.US_EAST_1; //region(region).	
+		
+		StsClient stsClient = StsClient.builder()
+                .region(region)
+                .build();
+		String accountId = "831195153875";
+		try {
+            GetCallerIdentityResponse response = stsClient.getCallerIdentity();
+            accountId =	response.account();
+        } catch (StsException e) {
+            //System.err.println(e.getMessage());
+            logger.error(e.getMessage());
+            System.exit(1);
+        }
+	    
+		/*Connect SNS Client*/		
+		SnsClient snsClient = SnsClient.builder()
+	                .region(region)
+	                .credentialsProvider(InstanceProfileCredentialsProvider.builder().build())
+	                .build();
+		
+		String path = ((ServletWebRequest)req).getRequest().getRequestURI();
+		Book lastBook = bookRepository.findByIsbn(newBook.getIsbn()).get(0);
+		String message = newBook+" username="+username+"\n"+path+"/"+lastBook.getId()+"\n BOOK IS ADDED";
+		String topicArn ="arn:aws:sns:us-east-1:"+accountId+":sns-topic";
+		try {
+	        PublishRequest request = PublishRequest.builder()
+	            .message(message)
+	            .topicArn(topicArn)
+	            .build();
+
+	        PublishResponse result = snsClient.publish(request);
+	        //System.out.println(result.messageId() + " Message sent. Status was " + result.sdkHttpResponse().statusCode());
+	        logger.info(result.messageId() + " Message sent. Status was " + result.sdkHttpResponse().statusCode());
+	     } catch (SnsException e) {
+	        //System.err.println(e.awsErrorDetails().errorMessage());
+	        logger.error(e.awsErrorDetails().errorMessage());
+	        System.exit(1);
+	     }
+		snsClient.close();
 		return lbook;
 		
     }
@@ -262,4 +353,6 @@ public class BookControler {
 		}
 		return new BookWithImages(book, bookImages);
 	}
+	
+
 }
