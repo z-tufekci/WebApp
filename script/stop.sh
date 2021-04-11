@@ -3,7 +3,14 @@
 #sudo systemctl stop tomcat
 cd /opt/webapps
 
-kill $(cat ./pid.file)
+FILE=./pid.file
+if test -f "$FILE"; then
+    kill $(cat ./pid.file)
+fi
 
-sudo rm -r /opt/tomcat/webapps/ROOT.jar
+FILE2=/opt/webapps/ROOT.jar
+if test -f "$FILE2"; then
+    sudo rm -r /opt/webapps/ROOT.jar
+fi
+
 
