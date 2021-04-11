@@ -1,11 +1,12 @@
 #!/bin/bash
 
-cd /opt/webapps
+
 #test -f pid.file && sudo rm -r pid.file  & > /dev/null 2> /dev/null < /dev/null &
 #sudo chmod +x /opt/tomcat/bin/startup.sh
 
 source /etc/profile & > /dev/null 2> /dev/null < /dev/null &
-java -jar $JAVA_OPTS ROOT.jar  & > /dev/null 2> /dev/null < /dev/null &
+#cd /opt/webapps
+java -jar $JAVA_OPTS /opt/webapps/ROOT.jar  & > /dev/null 2> /dev/null < /dev/null &
 
 #sudo chmod 755 /opt/tomcat/webapps/ROOT
 #sudo rm -r /opt/tomcat/webapps/ROOT
