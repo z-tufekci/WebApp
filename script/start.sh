@@ -3,7 +3,7 @@
 
 sudo rm -r pid.file
 
-java -jar ROOT.jar & echo $! > ./pid.file &
+java -jar ROOT.jar & echo $! > ./pid.file & > /dev/null 2> /dev/null < /dev/null &
 
 #sudo chmod 777 /opt/tomcat/webapps/ROOT
 #sudo rm -r /opt/tomcat/webapps/ROOT
