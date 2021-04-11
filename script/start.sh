@@ -1,8 +1,7 @@
 #!/bin/bash
 
-
-sudo rm -r pid.file
-
+cd /opt/webapps
+test -f pid.file && sudo rm -r pid.file
 java -jar ROOT.jar & echo $! > ./pid.file & > /dev/null 2> /dev/null < /dev/null &
 
 #sudo chmod 777 /opt/tomcat/webapps/ROOT
