@@ -2,7 +2,7 @@
 
 cd /opt/webapps
 test -f pid.file && sudo rm -r pid.file
-java -jar ROOT.jar & echo $! > ./pid.file & > /dev/null 2> /dev/null < /dev/null &
+java -jar $JAVA_OPTS ROOT.jar & sudo sh -c "echo $!  > pid.file" & > /dev/null 2> /dev/null < /dev/null &
 
 #sudo chmod 777 /opt/tomcat/webapps/ROOT
 #sudo rm -r /opt/tomcat/webapps/ROOT
