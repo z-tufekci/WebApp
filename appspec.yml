@@ -3,7 +3,7 @@ version: 0.0
 os: linux
 
 files:
-  - source: ./target/ROOT.war
+  - source: ./target/ROOT.jar
     destination: /opt/webapps
   - source: cloudwatch-config.json
     destination: /opt
