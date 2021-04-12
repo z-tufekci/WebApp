@@ -3,8 +3,8 @@ version: 0.0
 os: linux
 
 files:
-  - source: ./target/ROOT.jar
-    destination: /opt/webapps
+  - source: ./target/ROOT.war
+    destination: /opt/tomcat/webapps
   - source: cloudwatch-config.json
     destination: /opt
 hooks:
