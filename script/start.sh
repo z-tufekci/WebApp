@@ -4,7 +4,8 @@
 #test -f pid.file && sudo rm -r pid.file  & > /dev/null 2> /dev/null < /dev/null &
 
 #source /etc/profile & > /dev/null 2> /dev/null < /dev/null &
-source /etc/profile.d/setenv.sh
+#source /etc/profile.d/setenv.sh
+#source /home/ubuntu/.bashrc
 #cd /opt/webapps
 java -jar $JAVA_OPTS /opt/webapps/ROOT.jar  & > /dev/null 2> /dev/null < /dev/null &
 
