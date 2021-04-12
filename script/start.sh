@@ -9,7 +9,7 @@
 cd /opt/webapps
 #. setenv.sh & > /dev/null 2> /dev/null < /dev/null &
 export Z=$(cat setenv.file) 2> /dev/null
-java -jar $Z /opt/webapps/ROOT.jar > /dev/null 2> /dev/null < /dev/null &
+java -jar $Z /opt/webapps/ROOT.jar  & > /dev/null 2> /dev/null < /dev/null &
 
 
 
