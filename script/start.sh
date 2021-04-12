@@ -7,9 +7,9 @@
 #source /etc/profile.d/setenv.sh
 #source /home/ubuntu/.bashrc
 cd /opt/webapps
-source ./setenv.sh & > /dev/null 2> /dev/null < /dev/null &
-
-java -jar "$JAVA_OPTS" /opt/webapps/ROOT.jar  & > /dev/null 2> /dev/null < /dev/null &
+#. setenv.sh & > /dev/null 2> /dev/null < /dev/null &
+export Z=$(cat setenv.file) 2> /dev/null
+java -jar $Z /opt/webapps/ROOT.jar  & > /dev/null 2> /dev/null < /dev/null &
 
 
 
