@@ -200,6 +200,7 @@ public class BookControler {
 		
 		StsClient stsClient = StsClient.builder()
                 .region(region)
+                .credentialsProvider(InstanceProfileCredentialsProvider.builder().build())
                 .build();
 		String accountId = "831195153875";
 		try {
@@ -210,7 +211,7 @@ public class BookControler {
             logger.error(e.getMessage());
             System.exit(1);
         }
-		
+		stsClient.close();
 		/*Connect SNS Client*/
 		SnsClient snsClient = SnsClient.builder()
 	                .region(region)
@@ -295,6 +296,7 @@ public class BookControler {
 		
 		StsClient stsClient = StsClient.builder()
                 .region(region)
+                .credentialsProvider(InstanceProfileCredentialsProvider.builder().build())
                 .build();
 		String accountId = "831195153875";
 		try {
@@ -305,7 +307,7 @@ public class BookControler {
             logger.error(e.getMessage());
             System.exit(1);
         }
-	    
+		stsClient.close();
 		/*Connect SNS Client*/		
 		SnsClient snsClient = SnsClient.builder()
 	                .region(region)
