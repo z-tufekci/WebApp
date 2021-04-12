@@ -239,7 +239,7 @@ public class BookControler {
 	
 	@RequestMapping(path = "/books" ,method = RequestMethod.POST, produces = "application/json",consumes = "application/json")
 	@ResponseStatus(HttpStatus.OK)
-    public Book generateBook(@RequestBody Book book,@RequestBody Principal principal,@PathVariable HttpServletRequest req){
+    public Book generateBook(@RequestBody Book book,Principal principal,@PathVariable HttpServletRequest req){
 		
 		
 		   /* {
