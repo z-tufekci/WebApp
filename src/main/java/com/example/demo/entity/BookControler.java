@@ -48,13 +48,13 @@ import software.amazon.awssdk.services.sts.model.StsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.json.simple.JSONObject;
-
 @RestController
 public class BookControler {
 	
 	private final static Logger logger =LoggerFactory.getLogger(BookControler.class);
 	
 	private static final StatsDClient statsd = new NonBlockingStatsDClient("csye6225.webapp", "localhost", 8125);
+	
 	
 	@Autowired
     BookRepository bookRepository;
@@ -239,7 +239,7 @@ public class BookControler {
 	
 	@RequestMapping(path = "/books" ,method = RequestMethod.POST, produces = "application/json",consumes = "application/json")
 	@ResponseStatus(HttpStatus.OK)
-    public Book generateBook(@RequestBody Book book,@RequestBody Principal principal,@RequestBody HttpServletRequest req){
+    public Book generateBook(@RequestBody Book book,@RequestBody Principal principal,@PathVariable HttpServletRequest req){
 		
 		
 		   /* {
@@ -314,7 +314,7 @@ public class BookControler {
 	                .credentialsProvider(InstanceProfileCredentialsProvider.builder().build())
 	                .build();
 		
-		String path = "";//((ServletWebRequest)req).getRequest().getRequestURI();
+		String path = req.getRequestURL().toString();//((ServletWebRequest)req).getRequest().getRequestURI();
 		Book lastBook = bookRepository.findByIsbn(newBook.getIsbn()).get(0);
 		String message = newBook+" username="+username+"\n"+path+"/"+lastBook.getId()+"\n BOOK IS ADDED";
 		String topicArn ="arn:aws:sns:us-east-1:"+accountId+":sns-topic";
