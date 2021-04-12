@@ -314,7 +314,7 @@ public class BookControler {
 	                .credentialsProvider(InstanceProfileCredentialsProvider.builder().build())
 	                .build();
 		
-		String path = ((ServletWebRequest)req).getRequest().getRequestURI();
+		String path = "";//((ServletWebRequest)req).getRequest().getRequestURI();
 		Book lastBook = bookRepository.findByIsbn(newBook.getIsbn()).get(0);
 		String message = newBook+" username="+username+"\n"+path+"/"+lastBook.getId()+"\n BOOK IS ADDED";
 		String topicArn ="arn:aws:sns:us-east-1:"+accountId+":sns-topic";
