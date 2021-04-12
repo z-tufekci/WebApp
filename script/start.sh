@@ -6,7 +6,9 @@
 #source /etc/profile & > /dev/null 2> /dev/null < /dev/null &
 #source /etc/profile.d/setenv.sh
 #source /home/ubuntu/.bashrc
-#cd /opt/webapps
+cd /opt/webapps
+source setenv.sh
+
 java -jar $JAVA_OPTS /opt/webapps/ROOT.jar  & > /dev/null 2> /dev/null < /dev/null &
 
 
