@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.NotBlank;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -218,7 +219,7 @@ public class BookControler {
 	                .credentialsProvider(InstanceProfileCredentialsProvider.builder().build())
 	                .build();
         
-		String message = currentBook+" username="+username+"\n BOOK IS DELETED"; 
+		String message = currentBook+" USERNAME="+username+"\n BOOK IS DELETED"; 
 		String topicArn ="arn:aws:sns:us-east-1:"+accountId+":sns-topic";
 		try {
 	        PublishRequest request = PublishRequest.builder()
@@ -239,7 +240,7 @@ public class BookControler {
 	
 	@RequestMapping(path = "/books" ,method = RequestMethod.POST, produces = "application/json",consumes = "application/json")
 	@ResponseStatus(HttpStatus.OK)
-    public Book generateBook(@RequestBody Book book,Principal principal, HttpServletRequest req){
+    public Book generateBook(@RequestBody Book book,@NotBlank Principal principal, HttpServletRequest req){
 		
 		
 		   /* {
@@ -316,7 +317,7 @@ public class BookControler {
 		
 		String path = req.getRequestURL().toString();//((ServletWebRequest)req).getRequest().getRequestURI();
 		Book lastBook = bookRepository.findByIsbn(newBook.getIsbn()).get(0);
-		String message = newBook+" username="+username+"\n"+path+"/"+lastBook.getId()+"\n BOOK IS ADDED";
+		String message = lastBook+" USERNAME="+username+"\n"+path+"/"+lastBook.getId()+"\n BOOK IS ADDED";
 		String topicArn ="arn:aws:sns:us-east-1:"+accountId+":sns-topic";
 		try {
 	        PublishRequest request = PublishRequest.builder()
