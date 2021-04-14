@@ -76,8 +76,8 @@ public class Book {
 	}
 	@Override
 	public String toString() {
-		return "Book id=" + id + ", isbn=" + isbn + ", title=" + title + ", published_date=" + published_date
-				+ ", author=" + author + ", user_id=" + user_id + "";
+		return "BOOK ID=" + id + ", ISBN=" + isbn + ", TITLE=" + title + ", PUBLISH DATE=" + published_date
+				+ ", AUTHOR=" + author + ", USER ID=" + user_id + "";
 	}
 
 
