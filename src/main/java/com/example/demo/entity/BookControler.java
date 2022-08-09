@@ -203,7 +203,7 @@ public class BookControler {
                 .region(region)
                 .credentialsProvider(InstanceProfileCredentialsProvider.builder().build())
                 .build();
-		String accountId = "831195153875";
+		String accountId = "12digitaccountid";
 		try {
             GetCallerIdentityResponse response = stsClient.getCallerIdentity();
             accountId =	response.account();
